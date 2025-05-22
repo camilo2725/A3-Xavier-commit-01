@@ -1,0 +1,11 @@
+module.exports = {
+  async buscarReservasPorMesa(mesa) {
+    throw new Error("IMPLEMENTE AQUI COM O BANCO DE DADOS REAL");
+  },
+  async buscarReservasPorPeriodo(inicio, fim) {
+    throw new Error("IMPLEMENTE AQUI COM O BANCO DE DADOS REAL");
+  },
+  async buscarReservasConfirmadas() {
+    throw new Error("IMPLEMENTE AQUI COM O BANCO DE DADOS REAL");
+  }
+};
