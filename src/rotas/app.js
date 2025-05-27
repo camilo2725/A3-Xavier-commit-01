@@ -1,6 +1,7 @@
 const express = require('express');
 const gerenteRoutes = require('./routes/gerente');
 
+
 const app = express();
 app.use(express.json());
 

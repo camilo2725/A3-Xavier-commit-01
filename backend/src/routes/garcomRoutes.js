@@ -1,12 +1,9 @@
-import {Router} from 'express';
-import ReservaController from "../controllers/ReservaController";
+import { Router } from "express";
+import ControleGarcom from "../controllers/garcomController";
 
 const router = new Router();
 
-router.post('/reserva', ControleReserva.create);
-
-router.put('/reserva/:numeMesa/confirmar', ControleReserva.confirm);
-
-router.delete('/reserva/:numMesa', ControleReserva.cancel);
+// Endpoint: PUT /garcom/reserva/5/confirmar
+router.put('/reserva/:numeMesa/confirmar', ControleGarcom.confirmarAtendimento);
 
 export default router;

@@ -1,69 +1,50 @@
 import Reserva from "../models/Reserva";
+import {
+    findReservaByMesa,
+    confirmarReserva,
+    cancelarReserva
+} from "../services/reservaService.js";
+import handleError from "../utils/errorHandler.js";
 
-class ControleReserva{
-    async create(req, res){
-        try{
+class ControleReserva {
+    async create(req, res) {
+        try {
             const reserva = new Reserva(req.body);
-            const{valid, errors} = reserva.validate();
-            
-            if(!valid) {
-                return handleError(res, errors, 400, 'Erro de validação');
-            }
-        }catch(error){
-           return handleError(res, error.mensagem);
-        }
-    }
-    
-    async confirm(req, res){
-        try{
-            const{numeMesa} = req.params;
-            const reserva = await Reserva.findbyMesa(numeMesa);
+            const { valid, errors } = reserva.validate();
 
-            if(!reserva){
-                return handleError(res, `Reserva para a mesa ${numeMesa} não encontrada`, 404, 'Não encontrado');
-            }
+            if (!valid) return handleError(res, errors, 400, "Erro de validação");
 
-            const resultado = reserva.ConfReserv();
-            
-            if(resultado.mensagem.includes ('sucesso')){
-                return res.json({mensagem: `Reserva foi confirmada para a mesa ${reserva.numeMesa}.`});
-            }
-
-            return handleError(res, resultado.mensagem, 400,'Falha ao confirmar reserva');
-        
-        } catch(error){
-            return handleError(res, error.mensagem);
+            // salvar reserva (simulado)
+            return res.status(201).json({ mensagem: "Reserva criada com sucesso", reserva });
+        } catch (error) {
+            return handleError(res, error.message);
         }
     }
 
-    async cancel(req, res){
-        try{
-            const{numeMesa} = req.params;
-            const reserva = await Reserva.findbyMesa(numeMesa);
+    async confirm(req, res) {
+        try {
+            const { numeMesa } = req.params;
+            const reserva = await findReservaByMesa(numeMesa);
+            if (!reserva) return handleError(res, "Reserva não encontrada", 404);
 
-            if(!reserva){
-                return handleError(res, `Reserva para a mesa ${numeMesa} não encontrada`, 404, 'Não encontrado');
-            }
-
-            const resultado = reserva.CancelReserv();
-            
-            if(resultado.mensagem.includes ('sucesso')){
-                return res.json({mensagem: `Reserva para a mesa ${reserva.numeMesa} foi cancelada.`});
-        
-        }
-
-            return handleError (res, resultado.mensagem, 400, 'Falha ao cancelar reserva');
-
-    }catch(error){
-            return handleError(res, error.mensagem);
+            const resultado = confirmarReserva(reserva);
+            return res.json(resultado);
+        } catch (error) {
+            return handleError(res, error.message);
         }
     }
-}
 
-function handleError(res, detail = 'An error has occurred.', status = 500, message = 'Internal Server Error') {
-    console.log(`Error: ${message} - ${detail}`);
-    if (!res.headersSent) {
-        return res.status(status).json({ message, detail });
+    async cancel(req, res) {
+        try {
+            const { numeMesa } = req.params;
+            const reserva = await findReservaByMesa(numeMesa);
+            if (!reserva) return handleError(res, "Reserva não encontrada", 404);
+
+            const resultado = cancelarReserva(reserva);
+            return res.json(resultado);
+        } catch (error) {
+            return handleError(res, error.message);
+        }
     }
 }
 

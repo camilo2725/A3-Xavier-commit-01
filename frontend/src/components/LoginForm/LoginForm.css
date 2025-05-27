@@ -1,0 +1,41 @@
+.error-message {
+    color: red;
+    font-weight: bold;
+    margin-bottom: 1rem;
+}
+
+.toggle-link {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+.toggle-link span {
+    color: #b41299;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.form-container {
+    display: flex;
+    justify-content: center;
+    margin: 10px 0;
+
+}
+
+.form-container .formulario {
+    max-width: 50%;
+    background: #F7F7F7;
+    box-shadow: 7px 7px 15px rgba(0, 0, 0, 0.08);
+    border-radius: 20px;
+    padding: 36px 64px;
+}
+
+.form-container .formulario h2 {
+    font-weight: 300;
+    font-size: 28px;
+}
+
+.button-wrapper {
+    display: flex;
+    justify-content: center;
+}
