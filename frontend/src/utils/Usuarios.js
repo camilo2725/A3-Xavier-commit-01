@@ -1,4 +1,5 @@
-import Reserva from "./Reserva";
+import Reserva from "../models/Reserva";
+//import { listarReservasPorPeriodo, listarReservasPorMesa, listarReservasAtendidas } from "./reservaOperacoesService";
 
 class Usuario {
     constructor({ nome, email, senha, cargo }) {
@@ -13,6 +14,21 @@ class Gerente extends Usuario {
     constructor(props) {
         super({ ...props, cargo: 'Gerente' });
     }
+
+    gerarRelatorioMesasConfirmadasPorGarcom(reservas) {
+        const relatorio = {};
+
+        reservas.forEach(reserva => {
+            if (reserva.statusMesa === 'livre' && reserva.garcomResponsavel) {
+                if (!relatorio[reserva.garcomResponsavel]) {
+                    relatorio[reserva.garcomResponsavel] = [];
+                }
+                relatorio[reserva.garcomResponsavel].push(reserva.numeMesa);
+            }
+        });
+
+        return relatorio;
+    }
 }
 
 class Garcom extends Usuario {
@@ -24,12 +40,17 @@ class Garcom extends Usuario {
         if (!(reserva instanceof Reserva)) {
             throw new Error("Parâmetro inválido: reserva deve ser uma instância de Reserva.");
         }
-        if (reserva.statusMesa === 'confirmada') {
+
+        if (reserva.statusMesa === 'reservada') {
+            reserva.statusAnterior = reserva.statusMesa;
             reserva.statusMesa = 'livre';
+            reserva.garcomResponsavel = this.nome;
             return { mensagem: `Reserva atendida! Mesa ${reserva.numeMesa} foi liberada.` };
         }
+
         return { mensagem: `A mesa ${reserva.numeMesa} não pode ser liberada. Status atual: ${reserva.statusMesa}` };
     }
+
 }
 
 

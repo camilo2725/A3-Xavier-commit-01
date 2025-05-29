@@ -1,12 +1,51 @@
+.form-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 80vh;
+    width: 100%;
+    background-size: cover;
+    z-index: 0;
+}
+
+.formulario {
+    width: 100%;
+    max-width: 400px;
+    background: #d8f3dc;
+    box-shadow: rgba(0, 0, 0, 0.17) 0px -23px 25px 0px inset,
+        rgba(0, 0, 0, 0.15) 0px -36px 30px 0px inset,
+        rgba(0, 0, 0, 0.1) 0px -79px 40px 0px inset,
+        rgba(0, 0, 0, 0.06) 0px 2px 1px,
+        rgba(0, 0, 0, 0.09) 0px 4px 2px,
+        rgba(0, 0, 0, 0.09) 0px 8px 4px,
+        rgba(0, 0, 0, 0.09) 0px 16px 8px,
+        rgba(0, 0, 0, 0.09) 0px 32px 16px;
+    border-radius: 20px;
+    padding: 28px 35px;
+}
+
+.formulario h2 {
+    font-weight: 300;
+    font-size: 24px;
+    margin-bottom: 24px;
+}
+
 .error-message {
     color: red;
     font-weight: bold;
     margin-bottom: 1rem;
 }
 
-.toggle-link {
+.button-wrapper {
+    display: flex;
+    justify-content: center;
     margin-top: 1rem;
+}
+
+.toggle-link {
+    margin-top: 1.5rem;
     font-size: 0.9rem;
+    text-align: center;
 }
 
 .toggle-link span {
@@ -15,27 +54,31 @@
     text-decoration: underline;
 }
 
-.form-container {
+.login-container {
+
+    background-size: cover;
+    min-height: 100vh;
     display: flex;
     justify-content: center;
-    margin: 10px 0;
-
+    align-items: center;
+    position: relative;
 }
 
-.form-container .formulario {
-    max-width: 50%;
-    background: #F7F7F7;
-    box-shadow: 7px 7px 15px rgba(0, 0, 0, 0.08);
-    border-radius: 20px;
-    padding: 36px 64px;
+
+.login-container::before {
+    content: '';
+    position: absolute;
+    inset: 0;
 }
 
-.form-container .formulario h2 {
-    font-weight: 300;
-    font-size: 28px;
-}
-
-.button-wrapper {
-    display: flex;
-    justify-content: center;
+.login-form {
+    position: relative;
+    z-index: 1;
+    background-color: white;
+    padding: 32px;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
 }

@@ -2,7 +2,7 @@ import Reserva from "../models/Reserva";
 
 const findReservaByMesa = async (numeMesa) => {
     // Aqui futuramente é para conectar ao banco de dados
-    return mockReservas.find(r => r.numeMesa === parseInt(numeMesa)); // temporário
+    //return mockReservas.find(r => r.numeMesa === parseInt(numeMesa)); // temporário
 };
 
 const confirmarReserva = (reserva) => reserva.confirmar();
@@ -26,34 +26,10 @@ const confirmarAtendimentoReserva = (reserva) => {
 };
 
 
-// Filtro por data (período)
-const listarReservasPorPeriodo = (dataInicio, dataFim) => {
-    return mockReservas.filter(r => {
-        const dataReserva = new Date(r.data);
-        return dataReserva >= dataInicio && dataReserva <= dataFim;
-    });
-};
-
-
-// Filtro por número da mesa
-const listarReservasPorMesa = (numeMesa) => {
-    // Implementar a busca no banco de dados!
-    return mockReservas.filter(r => r.numeMesa === parseInt(numeMesa));
-};
-
-// Filtro por reservas com status 'livre' (atendidas)
-const listarReservasAtendidas = () => {
-    // Implementar a busca no banco de dados!
-    return mockReservas.filter(r => r.statusMesa === 'livre');
-};
-
 export {
     findReservaByMesa,
     confirmarReserva,
     cancelarReserva,
     confirmarAtendimento,
-    confirmarAtendimentoReserva,
-    listarReservasPorMesa,
-    listarReservasAtendidas,
-    listarReservasPorPeriodo
+    confirmarAtendimentoReserva
 };

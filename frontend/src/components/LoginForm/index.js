@@ -23,7 +23,7 @@ export const LoginForm = ({ onLogin, onToggle }) => {
     return (
         <section className="form-container">
             <form className="formulario" onSubmit={handleLogin}>
-                <h2>Faça login:</h2>
+                <h2>Faça o login:</h2>
                 {error && <p className="error-message">{error}</p>}
                 <CampoTexto label="Email" required valor={email} aoAlterado={setEmail} placeholder="seu@email.com" />
                 <CampoTexto label="Senha" required valor={password} aoAlterado={setPassword} placeholder="Sua senha" />
