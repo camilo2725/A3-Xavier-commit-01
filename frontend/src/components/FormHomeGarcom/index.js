@@ -22,9 +22,6 @@ export const FormHomeGarcom = ({
     const [dataInicial, setDataInicial] = useState('');
     const [dataFinal, setDataFinal] = useState('');
 
-
-
-
     const isGerente = cargo === 'Gerente';
     const tituloFormulario = isGerente ? 'Selecione uma operação:' : 'Selecionar mesa:';
     const iconeInput = isGerente ? "/sheet.svg" : "/table_bar.svg";
@@ -35,7 +32,7 @@ export const FormHomeGarcom = ({
         { value: 'relatorio_garcom', label: 'Mesas confirmadas por garçom' }
     ];
 
-    const reservasDisponiveis = reservas.filter(r => r.statusMesa === 'reservada');
+    const reservasDisponiveis = reservas.filter(r => r.statusMesa === 'reservada' && !r.garcomResponsavel);
     const usuarioLogado = getLoggedUser();
     const nomeUsuario = usuarioLogado?.nome || 'Garçom';
 
@@ -48,7 +45,6 @@ export const FormHomeGarcom = ({
             let dadosTabela = [];
 
             switch (mesaSelecionada) {
-
                 case 'relatorio_mesa':
                     if (!numeroMesaRelatorio) {
                         setModalTipo('erro');
@@ -72,10 +68,7 @@ export const FormHomeGarcom = ({
                     colunasTabela = ['Garçom', 'Mesa', 'Status'];
 
                     dadosTabela = reservas
-                        .filter(r =>
-                            r.garcomResponsavel &&
-                            r.statusMesa === 'livre'
-                        )
+                        .filter(r => r.garcomResponsavel && r.statusMesa === 'livre')
                         .map(r => ({
                             Garçom: r.garcomResponsavel,
                             Mesa: r.numeMesa,
@@ -127,11 +120,14 @@ export const FormHomeGarcom = ({
             return;
         }
 
-
         if (!mesaSelecionada) return;
 
+        const [mesaSelecionadaNumero, mesaSelecionadaData] = mesaSelecionada.split('_');
+
         const reservaIndex = reservas.findIndex(
-            r => r.numeMesa.toString() === mesaSelecionada && r.statusMesa === 'reservada'
+            r => r.numeMesa.toString() === mesaSelecionadaNumero &&
+                r.data === mesaSelecionadaData &&
+                r.statusMesa === 'reservada'
         );
 
         if (reservaIndex === -1) {
@@ -147,14 +143,12 @@ export const FormHomeGarcom = ({
         const garcom = new Garcom(usuarioLogado);
         const { mensagem } = garcom.confirmarAtendimento(reservaSelecionada);
 
-
         setReservas(novasReservas);
         saveReservas(novasReservas);
 
         setModalTipo('sucesso');
         setModalMensagem(mensagem);
         setShowModal(true);
-
     };
 
     useEffect(() => {
@@ -167,89 +161,70 @@ export const FormHomeGarcom = ({
                 <div className="form-group input-responsavel">
                     <label className='form-title'>{tituloFormulario}</label>
                     <div className="input-icon-wrapper">
-                        <img src={iconeInput} alt="Ícone input" className="input-icon" />
-                        {isGerente ? (
-                            <select
-                                className="form-control input-with-icon"
-                                value={mesaSelecionada}
-                                onChange={(e) => setMesaSelecionada(e.target.value)}
-                            >
-                                <option value="" disabled hidden>-- Selecione uma operação --</option>
-                                {opcoesGerente.map((op, idx) => (
-                                    <option key={idx} value={op.value}>{op.label}</option>
-                                ))}
-                            </select>
-
+                        {!isGerente && reservasDisponiveis.length === 0 ? (
+                            <p className="text-danger mt-1 px-2 py-2 rounded" style={{ backgroundColor: '#f8d7da' }}>
+                                Não há reservas disponíveis para confirmar.
+                            </p>
                         ) : (
-                            reservasDisponiveis.length === 0 ? (
-                                <p className="text-danger mt-2">Não há reservas disponíveis para confirmar.</p>
-                            ) : (
+                            <>
+                                <img src={iconeInput} alt="Ícone input" className="input-icon" />
                                 <select
                                     className="form-control input-with-icon"
                                     value={mesaSelecionada}
                                     onChange={(e) => setMesaSelecionada(e.target.value)}
                                 >
-                                    <option value="" disabled hidden>-- Escolha uma mesa --</option>
-                                    {reservasDisponiveis.map((res, idx) => (
-                                        <option key={idx} value={res.numeMesa}>
-                                            Mesa - {res.numeMesa} | Dia - {res.data}
-                                        </option>
-                                    ))}
+                                    <option value="" disabled hidden>-- {isGerente ? 'Selecione uma operação' : 'Escolha uma mesa'} --</option>
+                                    {isGerente
+                                        ? opcoesGerente.map((op, idx) => (
+                                            <option key={idx} value={op.value}>{op.label}</option>
+                                        ))
+                                        : reservasDisponiveis.map((res, idx) => (
+                                            <option key={idx} value={`${res.numeMesa}_${res.data}`}>
+                                                Mesa - {res.numeMesa} | Dia - {res.data}
+                                            </option>
+                                        ))
+                                    }
                                 </select>
-                            )
+                            </>
                         )}
                     </div>
                 </div>
 
                 {isGerente && mesaSelecionada === 'relatorio_mesa' && (
                     <div className="form-group input-responsavel">
-                        <label className='form-title'>Selecione o número da mesa:</label>
+                        <label className='form-title'>Número da mesa:</label>
                         <div className="input-icon-wrapper">
                             <img src="/table_bar.svg" alt="Ícone mesa" className="input-icon" />
+                            <input
+                                type="text"
+                                className="form-control input-with-icon"
+                                placeholder="Ex: 5"
+                                value={numeroMesaRelatorio}
+                                onChange={(e) => setNumeroMesaRelatorio(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                )}
+
+                {isGerente && mesaSelecionada === 'relatorio_mesa' && (
+                    <div className="form-group input-responsavel">
+                        <label className='form-title'>Selecione o número da mesa:</label>
+                        <div className="input-icon-wrapper">
+                            <img src="/table_bar.svg" alt="Ícone input" className="input-icon" />
                             <select
                                 className="form-control input-with-icon"
                                 value={numeroMesaRelatorio}
                                 onChange={(e) => setNumeroMesaRelatorio(e.target.value)}
                             >
-                                <option value="" disabled hidden>-- Escolha a mesa --</option>
+                                <option value="" disabled hidden>-- Escolha uma mesa --</option>
                                 {[...new Set(reservas.map(r => r.numeMesa))].map((mesa, idx) => (
-                                    <option key={idx} value={mesa}>Mesa {mesa}</option>
+                                    <option key={idx} value={mesa}>
+                                        Mesa {mesa}
+                                    </option>
                                 ))}
                             </select>
                         </div>
                     </div>
-                )}
-
-                {isGerente && mesaSelecionada === 'relatorio_reservas_periodo' && (
-                    <>
-                        <div className="form-group input-responsavel">
-                            <label className='form-title'>Data inicial (DD/MM/AAAA):</label>
-                            <div className="input-icon-wrapper">
-                                <img src="/calendar.svg" alt="Ícone calendário" className="input-icon" />
-                                <input
-                                    type="text"
-                                    className="form-control input-with-icon"
-                                    placeholder="Ex: 01/01/2025"
-                                    value={dataInicial}
-                                    onChange={(e) => setDataInicial(e.target.value)}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="form-group input-responsavel">
-                            <label className='form-title'>Data final (DD/MM/AAAA):</label>
-                            <div className="input-icon-wrapper">
-                                <img src="/calendar.svg" alt="Ícone calendário" className="input-icon" />
-                                <input
-                                    type="text"
-                                    className="form-control input-with-icon"
-                                    placeholder="Ex: 31/01/2025"
-                                    value={dataFinal}
-                                    onChange={(e) => setDataFinal(e.target.value)}
-                                />
-                            </div>
-                        </div>
-                    </>
                 )}
 
                 <div className="buttons-container">

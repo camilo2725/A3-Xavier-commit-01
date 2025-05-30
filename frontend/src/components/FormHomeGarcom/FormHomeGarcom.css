@@ -1,7 +1,7 @@
 .formhome-container {
     background-color: #F7F7F7;
     border-radius: 18px;
-    max-width: 600px;
+    max-width: 450px;
     margin: 20px auto;
     padding: 20px;
     display: flex;
@@ -38,7 +38,6 @@
 
 .input-responsavel {
     grid-column: 1 / -1;
-    /* ocupa toda a linha */
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -57,12 +56,10 @@
     width: 20px;
     height: 20px;
     pointer-events: none;
-    /* para não atrapalhar o clique no input */
 }
 
 .input-with-icon {
     padding-left: 40px !important;
-    /* espaço pro ícone */
 }
 
 select option {
@@ -77,6 +74,6 @@ select option {
 }
 
 input {
-    border-radius: 12px !important;
+    border-radius: 18px !important;
     box-shadow: rgba(50, 50, 93, 0.25) 0px 50px 100px -20px, rgba(0, 0, 0, 0.3) 0px 30px 60px -30px, rgba(10, 37, 64, 0.35) 0px -2px 6px 0px inset;
 }
