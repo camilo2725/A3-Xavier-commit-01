@@ -62,8 +62,8 @@ export const FormHomeGarcom = ({
                     dadosTabela = reservas
                         .filter(r => r.numeMesa.toString() === numeroMesaRelatorio)
                         .map(r => ({
-                            mesa: r.numeMesa,
-                            data: r.data
+                            Mesa: r.numeMesa,
+                            Data: r.data
                         }));
                     break;
 
@@ -79,7 +79,7 @@ export const FormHomeGarcom = ({
                         .map(r => ({
                             Garçom: r.garcomResponsavel,
                             Mesa: r.numeMesa,
-                            Status: 'confirmada'  // sempre "atendida" pois é livre após confirmação
+                            Status: 'confirmada'
                         }));
                     break;
 
@@ -102,10 +102,10 @@ export const FormHomeGarcom = ({
                             return dataReserva && dataReserva >= dataInicioParsed && dataReserva <= dataFimParsed;
                         })
                         .map(r => ({
-                            mesa: r.numeMesa,
-                            data: r.data,
-                            hora: r.hora,
-                            status: r.statusMesa
+                            Mesa: r.numeMesa,
+                            Data: r.data,
+                            Hora: r.hora,
+                            Status: r.statusMesa
                         }));
                     break;
 
@@ -116,7 +116,6 @@ export const FormHomeGarcom = ({
             setModalTipo('sucesso');
             setModalMensagem(mensagem);
             setShowModal(true);
-            console.log('dadosTabela do relatório garçom:', dadosTabela);
 
             setTimeout(() => {
                 setColunas(colunasTabela);
