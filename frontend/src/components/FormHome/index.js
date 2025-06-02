@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
 import { Modal } from '../Modal';
 import Reserva from '../../models/Reserva';
-import { saveReservas } from '../../utils/userService';
 import { definirTipoModal } from '../../utils/modalUtils';
+import { saveReservas } from '../../services/userService';
+import { criarReserva } from '../../services/reservaServiceAPI';
+
+
 import './FormHome.css';
 
 export const FormHome = ({ reservas, setReservas }) => {
@@ -12,16 +15,16 @@ export const FormHome = ({ reservas, setReservas }) => {
         numeMesa: '',
         quantPessoas: '',
         nomeRespons: '',
-        statusMesa: 'reservada',
+        statusMesa: 'reservada'
     });
 
-    const [mensagem, setMensagem] = useState('');
     const [erros, setErros] = useState([]);
+    const [mensagem, setMensagem] = useState('');
     const [showModal, setShowModal] = useState(false);
     const [modalMensagem, setModalMensagem] = useState('');
     const [modalTipo, setModalTipo] = useState('sucesso');
 
-    // ✅ Função utilitária reutilizável
+
     const adicionarReserva = (novaReserva) => {
         const atualizadas = [...reservas, novaReserva];
         saveReservas(atualizadas);
@@ -36,25 +39,37 @@ export const FormHome = ({ reservas, setReservas }) => {
         }));
     };
 
-    const handleCriar = (e) => {
+
+    const handleCriar = async (e) => {
         e.preventDefault();
 
         const { sucesso, reserva: novaReserva, mensagem } = Reserva.criarReserva(formData, reservas);
 
         if (!sucesso) {
+            setErros([mensagem]);
             setModalTipo(definirTipoModal(mensagem));
             setModalMensagem(mensagem);
             setShowModal(true);
             return;
         }
 
-        adicionarReserva(novaReserva);
+        try {
 
-        setMensagem(`Reserva criada com sucesso para a mesa ${novaReserva.numeMesa}!`);
-        setShowModal(true);
-        setModalTipo('sucesso');
-        setModalMensagem(`Reserva criada com sucesso para a mesa ${novaReserva.numeMesa}!`);
+            const reservaSalva = await criarReserva(novaReserva);
+
+            setReservas(prev => [...prev, reservaSalva]);
+            setMensagem(`Reserva criada com sucesso para a mesa ${novaReserva.numeMesa}!`);
+            setModalTipo('sucesso');
+            setModalMensagem('Reserva criada com sucesso!');
+            setShowModal(true);
+            setErros([]);
+        } catch (error) {
+            setModalTipo('erro');
+            setModalMensagem('Erro ao salvar reserva no servidor.');
+            setShowModal(true);
+        }
     };
+
 
     const handleCancelar = (e) => {
         e.preventDefault();
@@ -86,39 +101,11 @@ export const FormHome = ({ reservas, setReservas }) => {
         setFormData({ data: '', hora: '', nomeRespons: '', numeMesa: '', quantPessoas: '' });
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-
-        const novaReserva = new Reserva({
-            data: formData.data,
-            hora: formData.hora,
-            numeMesa: parseInt(formData.numeMesa),
-            quantPessoas: parseInt(formData.quantPessoas),
-            nomeRespons: formData.nomeRespons,
-            statusMesa: formData.statusMesa
-        });
-
-        const result = novaReserva.validate();
-
-        if (!result.valid) {
-            setErros(result.errors);
-            setMensagem('');
-        } else {
-            setErros([]);
-            setMensagem(`Reserva criada com sucesso para a mesa ${novaReserva.numeMesa}!`);
-            // Aqui você pode armazenar em algum estado global, enviar para backend, etc.
-        }
-    };
-
-    useEffect(() => {
-        console.log("Reservas atualizadas:", reservas);
-    }, [reservas]);
-
     useEffect(() => {
         if (mensagem) {
             const timer = setTimeout(() => {
                 setMensagem('');
-            }, 3000); // 3 segundos
+            }, 3000);
 
             return () => clearTimeout(timer);
         }
@@ -126,7 +113,7 @@ export const FormHome = ({ reservas, setReservas }) => {
 
     return (
         <div className='formhome-container'>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleCriar}>
                 <div className="form-grid">
                     <div className="form-group">
                         <label htmlFor="data">Data</label>
@@ -134,7 +121,7 @@ export const FormHome = ({ reservas, setReservas }) => {
                     </div>
                     <div className="form-group">
                         <label htmlFor="hora">Hora</label>
-                        <input type="text" className="form-control rounded-sm" name="hora" value={formData.hora} onChange={handleChange} required />
+                        <input type="time" className="form-control rounded-sm" name="hora" value={formData.hora} onChange={handleChange} required />
                     </div>
                     <div className="form-group">
                         <label htmlFor="numeMesa">Número da mesa</label>

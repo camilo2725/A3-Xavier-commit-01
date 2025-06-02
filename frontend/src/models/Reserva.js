@@ -1,7 +1,8 @@
 import { parseDiaMesAno } from '../utils/dateUtils';
 
 class Reserva {
-  constructor({ data, hora, numeMesa, quantPessoas, nomeRespons, statusMesa, statusAnterior = "", garcomResponsavel = "" }) {
+  constructor({ id, data, hora, numeMesa, quantPessoas, nomeRespons, statusMesa, statusAnterior = "", garcomResponsavel = "" }) {
+    this.id = id;
     this.data = data;
     this.hora = hora;
     this.numeMesa = numeMesa;
@@ -12,7 +13,7 @@ class Reserva {
     this.garcomResponsavel = garcomResponsavel;
   }
 
-  static criarReserva(dados, reservasExistentes) {
+  static criarReserva(dados) {
     const novaReserva = new Reserva({
       ...dados,
       numeMesa: parseInt(dados.numeMesa),
@@ -22,20 +23,6 @@ class Reserva {
     const { valid, errors } = novaReserva.validate();
     if (!valid) {
       return { sucesso: false, mensagem: errors.join('\n') };
-    }
-
-    const mesaOcupada = reservasExistentes.find(
-      r =>
-        r.numeMesa === novaReserva.numeMesa &&
-        parseDiaMesAno(r.data).getTime() === parseDiaMesAno(novaReserva.data).getTime() &&
-        r.statusMesa !== 'cancelada'
-    );
-
-    if (mesaOcupada) {
-      return {
-        sucesso: false,
-        mensagem: `A mesa ${novaReserva.numeMesa} já está reservada.`,
-      };
     }
 
     return { sucesso: true, reserva: novaReserva, mensagem: `Reserva criada com sucesso para a mesa ${novaReserva.numeMesa}.` };
@@ -67,9 +54,8 @@ class Reserva {
 
 
   LiberarMesa() {
-    console.log('Status atual da mesa:', this.statusMesa);
     if (this.statusMesa === 'confirmada') {
-      this.statusAnterior = this.statusMesa; // 👈 Salva status anterior
+      this.statusAnterior = this.statusMesa;
       this.statusMesa = 'livre';
       return { mensagem: `Mesa ${this.numeMesa} liberada com sucesso.` };
     }
@@ -106,6 +92,26 @@ class Reserva {
     if (errors.length > 0) return { valid: false, errors };
     return { valid: true };
   }
+
+
+  toJSON() {
+    return {
+      id: this.id,
+      data: this.data,
+      hora: this.hora,
+      numeMesa: this.numeMesa,
+      quantPessoas: this.quantPessoas,
+      nomeRespons: this.nomeRespons,
+      statusMesa: this.statusMesa,
+      statusAnterior: this.statusAnterior,
+      garcomResponsavel: this.garcomResponsavel,
+    };
+  }
+
 }
+
+
+
+
 
 export default Reserva;

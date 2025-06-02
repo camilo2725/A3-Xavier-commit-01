@@ -2,10 +2,12 @@ import React, { useState, useEffect } from "react";
 import { NavBar } from "./components/NavBar";
 import { Tabela } from "./components/Tabela";
 import { FormHome } from "./components/FormHome";
+import { useUser } from "./context/userContext";
 import { FormHomeGarcom } from "./components/FormHomeGarcom";
-import './Home.css';
-import { saveReservas, getReservas } from './utils/userService';
+import { saveReservas, getReservas } from './services/userService';
+import { criarReserva, buscarReservas } from "./services/userServiceAPI";
 import Reserva from "./models/Reserva";
+import './Home.css';
 
 export const Home = ({ user, logout }) => {
     const [colunas, setColunas] = useState([]);
@@ -28,9 +30,17 @@ export const Home = ({ user, logout }) => {
     };
 
     useEffect(() => {
-        const dadosBrutos = getReservas();
-        const reservasConvertidas = dadosBrutos.map(obj => new Reserva(obj));
-        setReservas(reservasConvertidas);
+        async function carregarReservas() {
+            try {
+                const dadosAPI = await buscarReservas();
+                const reservasConvertidas = dadosAPI.map(obj => new Reserva(obj));
+                setReservas(reservasConvertidas);
+            } catch (error) {
+                console.error("Erro ao carregar reservas:", error);
+            }
+        }
+
+        carregarReservas();
     }, []);
 
     const getClassePorCargo = (cargo) => {
@@ -45,13 +55,14 @@ export const Home = ({ user, logout }) => {
 
             <div className="form-img-wrapper">
                 <div className="left-side">
-                    {user.cargo === "Atendente" ? (
+                    {user.cargo === "atendente" ? (
                         <FormHome reservas={reservas} setReservas={setReservas} />
                     ) : !mostrarTabela ? (
                         <FormHomeGarcom
                             reservas={reservas}
                             setReservas={setReservas}
                             cargo={user.cargo}
+                            user={user}
                             setMostrarTabela={setMostrarTabela}
                             setColunas={setColunas}
                             setDados={setDados}

@@ -16,7 +16,6 @@
     border-radius: 12px;
     box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px;
     overflow: hidden;
-    /* para aplicar o border-radius corretamente em tabelas */
 }
 
 .tabela-personalizada th,

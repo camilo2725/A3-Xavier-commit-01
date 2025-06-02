@@ -10,8 +10,21 @@ export const parseDiaMesAno = (dataStr) => {
         data.getMonth() !== mes - 1 ||
         data.getDate() !== dia
     ) {
-        return null; // Data inválida
+        return null;
     }
 
     return data;
+};
+
+
+// Formata uma data ISO para "dd/mm/aaaa"
+export const formatarDataISO = (dataIso) => {
+    const data = new Date(dataIso);
+    return data.toLocaleDateString('pt-BR'); // ex: "10/10/2025"
+};
+
+// Formata hora no formato "HH:MM"
+export const formatarHora = (hora) => {
+    if (!hora) return '--:--';
+    return hora.slice(0, 5); // "14:30" se for "14:30:00"
 };

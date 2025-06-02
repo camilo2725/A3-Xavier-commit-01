@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Modal } from '../Modal';
-import { saveReservas, getLoggedUser } from '../../utils/userService';
-import { parseDiaMesAno } from '../../utils/dateUtils';
+import { parseDiaMesAno, formatarDataISO, formatarHora } from '../../utils/dateUtils';
+import { useUser } from '../../context/userContext';
+import { cancelarReserva, buscarReservas } from '../../services/userServiceAPI';
 import { Garcom } from '../../utils/Usuarios';
 import './FormHomeGarcom.css';
 
@@ -22,7 +23,11 @@ export const FormHomeGarcom = ({
     const [dataInicial, setDataInicial] = useState('');
     const [dataFinal, setDataFinal] = useState('');
 
-    const isGerente = cargo === 'Gerente';
+    const { usuario } = useUser();
+    const isGerente = usuario?.cargo === 'gerente';
+
+
+
     const tituloFormulario = isGerente ? 'Selecione uma operação:' : 'Selecionar mesa:';
     const iconeInput = isGerente ? "/sheet.svg" : "/table_bar.svg";
 
@@ -33,8 +38,9 @@ export const FormHomeGarcom = ({
     ];
 
     const reservasDisponiveis = reservas.filter(r => r.statusMesa === 'reservada' && !r.garcomResponsavel);
-    const usuarioLogado = getLoggedUser();
-    const nomeUsuario = usuarioLogado?.nome || 'Garçom';
+    const nomeUsuario = usuario?.cargo === 'garcom' ? (usuario?.nome || 'garcom') : 'gerente';
+
+
 
     const handleConfirmar = () => {
         if (isGerente) {
@@ -125,7 +131,7 @@ export const FormHomeGarcom = ({
         const [mesaSelecionadaNumero, mesaSelecionadaData] = mesaSelecionada.split('_');
 
         const reservaIndex = reservas.findIndex(
-            r => r.numeMesa.toString() === mesaSelecionadaNumero &&
+            r => r.numeResa.toString() === mesaSelecionadaNumero &&
                 r.data === mesaSelecionadaData &&
                 r.statusMesa === 'reservada'
         );
@@ -140,11 +146,20 @@ export const FormHomeGarcom = ({
         const novasReservas = [...reservas];
         const reservaSelecionada = novasReservas[reservaIndex];
 
-        const garcom = new Garcom(usuarioLogado);
-        const { mensagem } = garcom.confirmarAtendimento(reservaSelecionada);
+        let mensagem = '';
+
+        if (usuario?.cargo === 'garcom') {
+            const garcom = new Garcom(usuario);
+            const { mensagem } = garcom.confirmarAtendimento(reservaSelecionada);
+
+            setReservas(novasReservas);
+            setModalTipo('sucesso');
+            setModalMensagem(mensagem);
+            setShowModal(true);
+        }
+
 
         setReservas(novasReservas);
-        saveReservas(novasReservas);
 
         setModalTipo('sucesso');
         setModalMensagem(mensagem);
@@ -154,6 +169,8 @@ export const FormHomeGarcom = ({
     useEffect(() => {
         console.log("Reservas atualizadas:", reservas);
     }, [reservas]);
+
+    console.log("Reservas disponíveis:", reservasDisponiveis);
 
     return (
         <div className='formhome-container'>
@@ -180,7 +197,7 @@ export const FormHomeGarcom = ({
                                         ))
                                         : reservasDisponiveis.map((res, idx) => (
                                             <option key={idx} value={`${res.numeMesa}_${res.data}`}>
-                                                Mesa - {res.numeMesa} | Dia - {res.data}
+                                                Mesa - {res.numeMesa} | Dia - {formatarDataISO(res.data)} | Hora - {formatarHora(res.hora)}
                                             </option>
                                         ))
                                     }

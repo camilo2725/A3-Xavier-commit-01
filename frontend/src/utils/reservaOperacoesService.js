@@ -1,8 +1,7 @@
 import Reserva from "../models/Reserva";
 
 const findReservaByMesa = async (numeMesa) => {
-    // Aqui futuramente é para conectar ao banco de dados
-    //return mockReservas.find(r => r.numeMesa === parseInt(numeMesa)); // temporário
+
 };
 
 const confirmarReserva = (reserva) => reserva.confirmar();
@@ -15,7 +14,6 @@ const confirmarAtendimento = (reserva) => {
     }
     return { mensagem: `A reserva não pode ser confirmada. Status atual: ${reserva.statusMesa}` };
 };
-
 
 const confirmarAtendimentoReserva = (reserva) => {
     if (reserva.statusMesa === 'confirmada') {

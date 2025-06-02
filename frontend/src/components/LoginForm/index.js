@@ -2,6 +2,9 @@ import './LoginForm.css';
 import { CampoTexto } from '../CampoTexto';
 import { useState } from 'react';
 import { Botao } from '../Botao';
+import { useUser } from '../../context/userContext';
+
+
 
 export const LoginForm = ({ onLogin, onToggle }) => {
     const [email, setEmail] = useState('');

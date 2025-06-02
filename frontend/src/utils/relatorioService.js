@@ -10,14 +10,3 @@ export const filtrarReservasPorPeriodo = (reservas, inicio, fim) => {
     });
 };
 
-export async function listarReservasAtendidas() {
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve([
-                { mesa: 1, cliente: "João", status: "confirmada" },
-                { mesa: 2, cliente: "Maria", status: "confirmada" },
-                { mesa: 3, cliente: "Lucas", status: "cancelada" },
-            ]);
-        }, 1000); // simula atraso da API
-    });
-}
