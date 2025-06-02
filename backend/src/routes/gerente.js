@@ -1,67 +1,57 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db');
+const db = require('../services/db');
 
-// Relatório
+// GET /api/gerente/relatorio-consolidado - Relatório geral das mesas
 router.get('/relatorio-consolidado', async (req, res) => {
-  try {
-    const resumo = (await db.query(
-      SELECT status, COUNT() as total 
-      FROM mesas 
-      GROUP BY status
-    )).rows;
+    try {
+        // Conta mesas por status
+        const resumo = await db('mesas')
+            .select('statusMesa as status')
+            .count('* as total')
+            .groupBy('statusMesa');
 
-    const livres = (await db.query("SELECT id, numero FROM mesas WHERE status = 'livre'")).rows;
-    const reservadas = (await db.query("SELECT id, numero FROM mesas WHERE status = 'reservada'")).rows;
-    const confirmadas = (await db.query("SELECT id, numero FROM mesas WHERE status = 'confirmada'")).rows;
+        // Lista mesas separadas por status
+        const livres = await db('mesas')
+            .select('id', 'numero')
+            .where('statusMesa', 'livre');
 
-    res.json({
-      resumo,
-      detalhes: { livres, reservadas, confirmadas }
-    });
+        const reservadas = await db('mesas')
+            .select('id', 'numero')
+            .where('statusMesa', 'reservada');
 
-  } catch (error) {
-    console.error("Erro no relatório consolidado:", error);
-    res.status(500).json({ error: "Erro ao gerar relatório consolidado" });
-  }
+        const confirmadas = await db('mesas')
+            .select('id', 'numero')
+            .where('statusMesa', 'confirmada');
+
+        res.json({
+            resumo,
+            detalhes: { livres, reservadas, confirmadas }
+        });
+    } catch (error) {
+        console.error('Erro ao gerar relatório consolidado:', error);
+        res.status(500).json({ erro: 'Erro interno ao gerar relatório.' });
+    }
 });
 
-// Relatórios com filtros avançados
+// GET /api/gerente/relatorios - Filtros avançados
 router.get('/relatorios', async (req, res) => {
-  try {
-    const { status, mesa, inicio, fim } = req.query;
-    let query = "SELECT FROM reservas WHERE 1=1";
-    const values = [];
+    try {
+        const { status, mesa, inicio, fim } = req.query;
 
-    if (status) {
-      query += " AND status = $" + (values.length + 1);
-      values.push(status);
+        let query = db('reservas').select('*');
+
+        if (status) query.where('status', status);
+        if (mesa) query.where('mesa_numero', mesa);
+        if (inicio && fim) query.whereBetween('data_reserva', [inicio, fim]);
+
+        const resultado = await query;
+
+        res.json({ sucesso: true, dados: resultado });
+    } catch (error) {
+        console.error('Erro ao buscar relatório filtrado:', error);
+        res.status(500).json({ sucesso: false, erro: 'Erro ao filtrar relatório.' });
     }
-
-    if (mesa) {
-      query += " AND mesa_numero = $" + (values.length + 1);
-      values.push(mesa);
-    }
-
-    if (inicio && fim) {
-      query += " AND data_reserva BETWEEN $" + (values.length + 1) + " AND $" + (values.length + 2);
-      values.push(inicio, fim);
-    }
-
-    const resultado = (await db.query(query, values)).rows;
-
-    res.json({
-      sucesso: true,
-      dados: resultado || []
-    });
-
-  } catch (error) {
-    console.error("Erro no relatório filtrado:", error);
-    res.status(500).json({
-      sucesso: false,
-      error: "Erro ao filtrar relatório"
-    });
-  }
 });
 
 module.exports = router;
