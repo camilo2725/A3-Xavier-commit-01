@@ -3,16 +3,24 @@ const router = express.Router();
 const { Pool } = require('pg');
 require('dotenv').config();
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || {
-    host: process.env.KNEX_HOST,
-    user: process.env.KNEX_USER,
-    password: process.env.KNEX_PASS,
-    database: process.env.KNEX_DATA,
-    port: 5432,
+module.exports = {
+  development: {
+    client: 'pg',
+    connection: process.env.DATABASE_URL
+      ? {
+          connectionString: process.env.DATABASE_URL,
+          ssl: { rejectUnauthorized: false }
+        }
+      : {
+          host: process.env.KNEX_HOST,
+          user: process.env.KNEX_USER,
+          password: process.env.KNEX_PASS,
+          database: process.env.KNEX_DATA,
+          port: 5432,
+          ssl: { rejectUnauthorized: false }
+        },
   },
-  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
-});
+};
 
 // GET /api/gerente/relatorio-consolidado - Relatório geral das mesas
 router.get('/relatorio-consolidado', async (req, res) => {
