@@ -1,32 +1,55 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../services/db');
+const { Pool } = require('pg');
+require('dotenv').config();
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL || {
+    host: process.env.KNEX_HOST,
+    user: process.env.KNEX_USER,
+    password: process.env.KNEX_PASS,
+    database: process.env.KNEX_DATA,
+    port: 5432,
+  },
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false
+});
 
 // GET /api/gerente/relatorio-consolidado - Relatório geral das mesas
 router.get('/relatorio-consolidado', async (req, res) => {
     try {
         // Conta mesas por status
-        const resumo = await db('mesas')
-            .select('statusMesa as status')
-            .count('* as total')
-            .groupBy('statusMesa');
+        const resumo = await pool.query(`
+            SELECT "statusMesa" as status, COUNT(*) as total 
+            FROM mesas 
+            GROUP BY "statusMesa"
+        `);
 
         // Lista mesas separadas por status
-        const livres = await db('mesas')
-            .select('id', 'numero')
-            .where('statusMesa', 'livre');
+        const livres = await pool.query(`
+            SELECT id, numero 
+            FROM mesas 
+            WHERE "statusMesa" = 'livre'
+        `);
 
-        const reservadas = await db('mesas')
-            .select('id', 'numero')
-            .where('statusMesa', 'reservada');
+        const reservadas = await pool.query(`
+            SELECT id, numero 
+            FROM mesas 
+            WHERE "statusMesa" = 'reservada'
+        `);
 
-        const confirmadas = await db('mesas')
-            .select('id', 'numero')
-            .where('statusMesa', 'confirmada');
+        const confirmadas = await pool.query(`
+            SELECT id, numero 
+            FROM mesas 
+            WHERE "statusMesa" = 'confirmada'
+        `);
 
         res.json({
-            resumo,
-            detalhes: { livres, reservadas, confirmadas }
+            resumo: resumo.rows,
+            detalhes: { 
+                livres: livres.rows, 
+                reservadas: reservadas.rows, 
+                confirmadas: confirmadas.rows 
+            }
         });
     } catch (error) {
         console.error('Erro ao gerar relatório consolidado:', error);
@@ -39,15 +62,30 @@ router.get('/relatorios', async (req, res) => {
     try {
         const { status, mesa, inicio, fim } = req.query;
 
-        let query = db('reservas').select('*');
+        let query = 'SELECT * FROM reservas';
+        const params = [];
+        const conditions = [];
 
-        if (status) query.where('status', status);
-        if (mesa) query.where('mesa_numero', mesa);
-        if (inicio && fim) query.whereBetween('data_reserva', [inicio, fim]);
+        if (status) {
+            conditions.push(`status = $${params.length + 1}`);
+            params.push(status);
+        }
+        if (mesa) {
+            conditions.push(`mesa_numero = $${params.length + 1}`);
+            params.push(mesa);
+        }
+        if (inicio && fim) {
+            conditions.push(`data_reserva BETWEEN $${params.length + 1} AND $${params.length + 2}`);
+            params.push(inicio, fim);
+        }
 
-        const resultado = await query;
+        if (conditions.length > 0) {
+            query += ' WHERE ' + conditions.join(' AND ');
+        }
 
-        res.json({ sucesso: true, dados: resultado });
+        const resultado = await pool.query(query, params);
+
+        res.json({ sucesso: true, dados: resultado.rows });
     } catch (error) {
         console.error('Erro ao buscar relatório filtrado:', error);
         res.status(500).json({ sucesso: false, erro: 'Erro ao filtrar relatório.' });
