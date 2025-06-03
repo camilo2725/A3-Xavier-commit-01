@@ -2,7 +2,7 @@ import {
     listarReservasPorPeriodo,
     listarReservasPorMesa,
     listarReservasAtendidas
-} from "../services/reservaOperacoesService.js";
+} from "../utils/reservaOperacoesService.js";
 import handleError from "../utils/errorHandler.js";
 import { parseDiaMesAno } from "../utils/dateUtils.js";
 

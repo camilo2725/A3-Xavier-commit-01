@@ -3,12 +3,22 @@ import {
     findReservaByMesa,
     confirmarReserva,
     cancelarReserva
-} from "../services/reservaService.js";
+} from "../utils/reservaOperacoesService.js";
 import handleError from "../utils/errorHandler.js";
+import verifDispoMesa from "../utils/verificarDisponiMesa.js";
 
 class ControleReserva {
     async create(req, res) {
         try {
+
+            const{ numeMesa, data } = req.body;
+
+            const mesaDisponivel = await verifDispoMesa(numeMesa, data);
+
+            if(!mesaDisponivel){
+                return handleError(res, `Mesa ${numeMesa} já está reservada para o dia ${data}`);
+            }
+
             const reserva = new Reserva(req.body);
             const { valid, errors } = reserva.validate();
 

@@ -1,4 +1,4 @@
-import { findReservaByMesa, confirmarAtendimentoReserva } from "../services/reservaOperacoesService.js";
+import { findReservaByMesa, confirmarAtendimentoReserva } from "../utils/reservaOperacoesService.js";
 import handleError from "../utils/errorHandler.js";
 
 class ControleGarcom {
