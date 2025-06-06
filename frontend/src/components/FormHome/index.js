@@ -4,8 +4,6 @@ import Reserva from '../../models/Reserva';
 import { definirTipoModal } from '../../utils/modalUtils';
 import { saveReservas } from '../../services/userService';
 import { criarReserva } from '../../services/reservaServiceAPI';
-
-
 import './FormHome.css';
 
 export const FormHome = ({ reservas, setReservas }) => {
@@ -72,35 +70,38 @@ export const FormHome = ({ reservas, setReservas }) => {
 
 
     const handleCancelar = (e) => {
-        e.preventDefault();
+    e.preventDefault();
 
-        const numeroMesa = parseInt(formData.numeMesa);
-        const reservaEncontrada = reservas.find(
-            r => r.numeMesa === numeroMesa && r.statusMesa !== 'cancelada'
-        );
+    const numeroMesa = parseInt(formData.numeMesa);
 
-        if (!reservaEncontrada) {
-            setModalTipo('erro');
-            setModalMensagem(`Nenhuma reserva ativa encontrada para a mesa ${numeroMesa}.`);
-            setShowModal(true);
-            return;
-        }
+    if (!numeroMesa) {
+        return;
+    }
 
-        const resultado = reservaEncontrada.cancelar(formData.data, formData.hora);
-
-        setReservas(prev => {
-            const atualizadas = [...prev];
-            saveReservas(atualizadas);
-            return atualizadas;
-        });
-
-        setModalTipo(resultado.mensagem.includes('não pode') || resultado.mensagem.includes('discrepância') ? 'erro' : 'sucesso');
-        setModalMensagem(resultado.mensagem);
+    fetch(`http://localhost:3001/api/reserva/${numeroMesa}/cancelar`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            data: formData.data,
+            hora: formData.hora
+        }),
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(response => response.json())
+    .then(data => {
+        setModalTipo('sucesso');
+        setModalMensagem(data.mensagem);
         setShowModal(true);
+    })
+    .catch(error => {
+        setModalTipo('erro');
+        setModalMensagem('Erro ao tentar cancelar a reserva.');
+        setShowModal(true);
+    });
 
-        setFormData({ data: '', hora: '', nomeRespons: '', numeMesa: '', quantPessoas: '' });
-    };
-
+    setFormData({ data: '', hora: '', nomeRespons: '', numeMesa: '', quantPessoas: '' });
+};
     useEffect(() => {
         if (mensagem) {
             const timer = setTimeout(() => {

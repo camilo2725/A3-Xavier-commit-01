@@ -4,6 +4,7 @@ import { parseDiaMesAno, formatarDataISO, formatarHora } from '../../utils/dateU
 import { useUser } from '../../context/userContext';
 import { cancelarReserva, buscarReservas } from '../../services/userServiceAPI';
 import { Garcom } from '../../utils/Usuarios';
+import { confirmarReservaAPI } from '../../services/userServiceAPI';
 import './FormHomeGarcom.css';
 
 export const FormHomeGarcom = ({
