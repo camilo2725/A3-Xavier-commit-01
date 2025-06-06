@@ -38,20 +38,27 @@ class Reserva {
     return { mensagem: `Reserva não pode ser concluída, porque a mesa já está ${this.statusMesa}` };
   }
   cancelar(data, hora) {
+    const dataOriginalObj = new Date(this.data);
+    const dataInformadaObj = new Date(data);
+    
+    if (isNaN(dataOriginalObj) || isNaN(dataInformadaObj)) {
+      return { mensagem: "Data inválida para cancelamento." };
+    }
 
-    const dataOriginal = parseDiaMesAno(this.data).getTime();
-    const dataInformada = parseDiaMesAno(data).getTime();
+    const dataOriginal = dataOriginalObj.toDateString();
+    const dataInformada = dataInformadaObj.toDateString();
 
     if (dataOriginal !== dataInformada || this.hora !== hora) {
       return { mensagem: "Não foi possível confirmar o cancelamento da reserva em razão da discrepância dos dados." };
     }
-    else if (this.statusMesa === 'reservada' || this.statusMesa === 'confirmada') {
+
+    if (this.statusMesa === 'reservada' || this.statusMesa === 'confirmada') {
       this.statusMesa = 'cancelada';
       return { mensagem: `Reserva para a mesa ${this.numeMesa} foi cancelada.` };
     }
-    return { mensagem: `Reserva não pode ser cancelada, pois já está ${this.statusMesa}` };
-  }
 
+    return { mensagem: `Reserva não pode ser cancelada, pois já está ${this.statusMesa}` };
+  }
 
   LiberarMesa() {
     if (this.statusMesa === 'confirmada') {

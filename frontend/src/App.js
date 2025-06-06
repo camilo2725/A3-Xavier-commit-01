@@ -70,10 +70,13 @@ function App() {
               <SignUpForm cargos={cargos} aoCadastrar={aoCadastrar} onToggle={() => setIsLogin(true)} />
             )
           ) : (
-            <>
-              <h2>Olá, {userLogged.nome}! Você está logado como {userLogged.cargo}.</h2>
-              <button onClick={logout}>Sair</button>
-            </>
+            <div className="login-container">
+              <div className="login-form">
+                <h2>Olá, {userLogged.nome}!</h2>
+                <p>Você está logado como <strong>{userLogged.cargo}</strong>.</p>
+                <button className="btn btn-danger mt-3" onClick={logout}>Sair</button>
+              </div>
+            </div>
           )}
         </div>
       } />
@@ -90,4 +93,3 @@ function App() {
 }
 
 export default App;
-
