@@ -77,12 +77,12 @@ class Reserva {
 
     if (!this.hora) errors.push("A hora é obrigatória.");
 
-    if (!Number.isInteger(this.numeMesa) || this.numeMesa <= 0) {
-      errors.push("O número da mesa precisa ser um número inteiro e maior que 0.");
+    if (!Number.isInteger(this.numeMesa) || this.numeMesa < 1 || this.numeMesa > 10) {
+      errors.push("O número da mesa precisa ser um número inteiro entre 1 e 10.");
     }
 
-    if (!Number.isInteger(this.quantPessoas) || this.quantPessoas <= 0) {
-      errors.push("A quantidade de pessoas precisa ser um número inteiro e maior que 0.");
+    if (!Number.isInteger(this.quantPessoas) || this.quantPessoas < 1 || this.quantPessoas > 10) {
+      errors.push("A quantidade de pessoas precisa ser um número inteiro entre 1 e 10.");
     }
 
     if (!this.nomeRespons || this.nomeRespons.trim().length < 3) {

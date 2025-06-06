@@ -38,3 +38,28 @@ export async function loginUsuario(email, senha) {
         throw error.response?.data?.erro || "Erro ao autenticar usuário.";
     }
 }
+
+export const confirmarReservaAPI = async (reservaId, nomeGarcom) => {
+    try {
+        const response = await fetch(`http://localhost:3001/api/reserva/${reservaId}/confirmar`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ nomeGarcom }) // Envia o nome do garçom
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.mensagem || 'Erro ao confirmar reserva');
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Erro ao confirmar reserva:', error);
+        return { 
+            sucesso: false, 
+            mensagem: error.message || 'Falha na comunicação com o servidor' 
+        };
+    }
+};

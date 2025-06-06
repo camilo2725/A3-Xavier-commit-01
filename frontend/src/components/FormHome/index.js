@@ -125,11 +125,11 @@ export const FormHome = ({ reservas, setReservas }) => {
                     </div>
                     <div className="form-group">
                         <label htmlFor="numeMesa">Número da mesa</label>
-                        <input type="number" className="form-control" name="numeMesa" value={formData.numeMesa} onChange={handleChange} required />
+                        <input type="number" className="form-control" name="numeMesa" min="1" max="10" value={formData.numeMesa} onChange={handleChange} required />
                     </div>
                     <div className="form-group">
                         <label htmlFor="quantPessoas">Total de pessoas</label>
-                        <input type="number" className="form-control" name="quantPessoas" value={formData.quantPessoas} onChange={handleChange} required />
+                        <input type="number" className="form-control" name="quantPessoas" min="1" max="10" value={formData.quantPessoas} onChange={handleChange} required />
                     </div>
                     <div className="form-group input-responsavel">
                         <label htmlFor="nomeRespons">Responsável</label>

@@ -42,7 +42,7 @@ export const FormHomeGarcom = ({
 
 
 
-    const handleConfirmar = () => {
+    const handleConfirmar = async () => {
         if (isGerente) {
             if (!mesaSelecionada) return;
 
@@ -148,21 +148,38 @@ export const FormHomeGarcom = ({
 
         let mensagem = '';
 
-        if (usuario?.cargo === 'garcom') {
-            const garcom = new Garcom(usuario);
-            const { mensagem } = garcom.confirmarAtendimento(reservaSelecionada);
+         try {
+        // Chamada à API para confirmar a reserva no backend
+        console.log('Enviando confirmação para reserva ID:', reservaSelecionada.id);
+        const resposta = await confirmarReservaAPI(reservaSelecionada.id); // Supondo que a reserva tenha um ID
+        console.log('Resposta completa da API:', resposta);
+
+        if (resposta.sucesso) {
+            // Atualiza o estado local
+            console.log('Atualizando estado local para mesa:', reservaSelecionada.numeMesa);
+            const novasReservas = [...reservas];
+            novasReservas[reservaIndex].statusMesa = 'livre';
+            novasReservas[reservaIndex].garcomResponsavel = usuario.nome;
 
             setReservas(novasReservas);
             setModalTipo('sucesso');
-            setModalMensagem(mensagem);
+            setModalMensagem("Mesa confirmada com sucesso");
+            setShowModal(true);
+        } else {
+            setModalTipo('erro');
+            setModalMensagem(resposta.mensagem || "Erro ao confirmar a reserva.");
             setShowModal(true);
         }
-
-
+    } catch (error) {
+        console.error('Erro detalhado:', error);
+        setModalTipo('erro');
+        setModalMensagem("Erro ao conectar com o servidor.");
+        setShowModal(true);
+    }
         setReservas(novasReservas);
 
         setModalTipo('sucesso');
-        setModalMensagem(mensagem);
+        setModalMensagem("Mesa confirmada com sucesso");
         setShowModal(true);
     };
 
