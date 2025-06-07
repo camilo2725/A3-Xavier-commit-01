@@ -11,9 +11,9 @@ const usuarioRoutes = require('./routes/usuariosRoutes');
 const reservaRoutes = require('./routes/reservasRoutes');
 
 app.use('/api/usuario', usuarioRoutes);
-app.use('/api/reservas', reservaRoutes);
+app.use('/api/reserva', reservaRoutes);
 
-app.post('/reservas', (req, res) => {
+app.post('/reserva', (req, res) => {
     const dados = req.body;
     console.log('Reserva recebida:', dados);
     res.status(201).json({ mensagem: 'Reserva criada com sucesso!', dados });
