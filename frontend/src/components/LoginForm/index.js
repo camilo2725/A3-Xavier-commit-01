@@ -4,11 +4,12 @@ import { useState } from 'react';
 import { Botao } from '../Botao';
 import { useUser } from '../../context/userContext';
 
+
+
 export const LoginForm = ({ onLogin, onToggle }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
-    const { setUsuario } = useUser(); // Apenas esta linha foi adicionada
 
     const handleLogin = (e) => {
         e.preventDefault();
@@ -18,7 +19,8 @@ export const LoginForm = ({ onLogin, onToggle }) => {
             return;
         }
 
-        onLogin({ email, senha: password });;
+        const user = { email, senha: password };
+        onLogin(user);
     };
 
     return (
