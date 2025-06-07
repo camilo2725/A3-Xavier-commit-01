@@ -132,7 +132,7 @@ export const FormHomeGarcom = ({
         const [mesaSelecionadaNumero, mesaSelecionadaData] = mesaSelecionada.split('_');
 
         const reservaIndex = reservas.findIndex(
-            r => r.numeResa.toString() === mesaSelecionadaNumero &&
+            r => r.numeMesa.toString() === mesaSelecionadaNumero &&
                 r.data === mesaSelecionadaData &&
                 r.statusMesa === 'reservada'
         );
@@ -152,7 +152,7 @@ export const FormHomeGarcom = ({
          try {
         // Chamada à API para confirmar a reserva no backend
         console.log('Enviando confirmação para reserva ID:', reservaSelecionada.id);
-        const resposta = await confirmarReservaAPI(reservaSelecionada.id); // Supondo que a reserva tenha um ID
+        const resposta = await confirmarReservaAPI(reservaSelecionada.id, usuario.nome); // Supondo que a reserva tenha um ID
         console.log('Resposta completa da API:', resposta);
 
         if (resposta.sucesso) {
