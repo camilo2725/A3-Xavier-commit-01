@@ -11,7 +11,7 @@ const usuarioRoutes = require('./routes/usuariosRoutes');
 const reservaRoutes = require('./routes/reservasRoutes');
 
 app.use('/api/usuario', usuarioRoutes);
-app.use('/api/reserva', reservaRoutes);
+app.use('/api/reservas', reservaRoutes);
 
 app.post('/reservas', (req, res) => {
     const dados = req.body;

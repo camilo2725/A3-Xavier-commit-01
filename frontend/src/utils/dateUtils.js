@@ -23,16 +23,24 @@ export const parseDiaMesAno = (dataStr) => {
     }
 
 
+}
+export const formatarDataISO = (data) => {
+    if (!data) return '';
+    const dataObj = new Date(data);
+    
+    // Corrige o problema de fuso horário que pode mudar o dia
+    const dataCorrigida = new Date(dataObj.valueOf() + dataObj.getTimezoneOffset() * 60000);
+
+    const ano = dataCorrigida.getFullYear();
+    const mes = String(dataCorrigida.getMonth() + 1).padStart(2, '0'); // Mês é 0-indexado
+    const dia = String(dataCorrigida.getDate()).padStart(2, '0');
+
+    // Retorna a data no formato AAAA/MM/DD
+    return `${ano}/${mes}/${dia}`;
 };
-
-
-export const formatarDataISO = (dataIso) => {
-    const data = new Date(dataIso);
-    return data.toLocaleDateString('pt-BR'); // ex: "10/10/2025"
-};
-
 
 export const formatarHora = (hora) => {
-    if (!hora) return '--:--';
-    return hora.slice(0, 5); // "14:30" se for "14:30:00"
+    if (!hora || typeof hora !== 'string') return '';
+    // Pega apenas a parte da hora, ignorando os segundos
+    return hora.substring(0, 5); // ex: "19:00:00" -> "19:00"
 };

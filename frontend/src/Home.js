@@ -61,8 +61,8 @@ export const Home = ({ user, logout }) => {
                         <FormHomeGarcom
                             reservas={reservas}
                             setReservas={setReservas}
-                            cargo={user.cargo}
                             user={user}
+                            cargo={user.cargo}
                             setMostrarTabela={setMostrarTabela}
                             setColunas={setColunas}
                             setDados={setDados}

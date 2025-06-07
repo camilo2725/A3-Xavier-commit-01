@@ -1,12 +1,19 @@
 import api from './axiosClient'; // já configurado com baseURL
-
+import { formatarDataISO } from '../utils/dateUtils';
 
 const API_URL = 'http://localhost:3001/api';
 
 export async function buscarReservas() {
-    const response = await fetch(`${API_URL}/reserva`);
-    if (!response.ok) throw new Error('Erro ao buscar reservas');
-    return await response.json();
+    try {
+        const response = await api.get('/reservas'); 
+        return response.data.map(reserva => ({
+            ...reserva,
+            data: formatarDataISO(reserva.data),
+        }));
+    } catch (error) {
+        console.error("Erro ao buscar reservas:", error);
+        return [];
+    }
 }
 
 export async function criarReserva(data) {
@@ -41,25 +48,19 @@ export async function loginUsuario(email, senha) {
 
 export const confirmarReservaAPI = async (reservaId, nomeGarcom) => {
     try {
-        const response = await fetch(`http://localhost:3001/api/reserva/${reservaId}/confirmar`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ nomeGarcom }) // Envia o nome do garçom
+        const response = await api.post(`/reservas/${reservaId}/confirmar`, {
+             nomeGarcom 
         });
 
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.mensagem || 'Erro ao confirmar reserva');
-        }
+        // Se a chamada deu certo, o axios retorna os dados em 'response.data'
+        return response.data;
 
-        return await response.json();
     } catch (error) {
         console.error('Erro ao confirmar reserva:', error);
+        // Retorna um objeto de erro padronizado para o componente lidar
         return { 
             sucesso: false, 
-            mensagem: error.message || 'Falha na comunicação com o servidor' 
+            mensagem: error.response?.data?.mensagem || 'Falha na comunicação com o servidor' 
         };
     }
 };

@@ -1,16 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Modal } from '../Modal';
-import { parseDiaMesAno, formatarDataISO, formatarHora } from '../../utils/dateUtils';
-import { useUser } from '../../context/userContext';
-import { cancelarReserva, buscarReservas } from '../../services/userServiceAPI';
-import { Garcom } from '../../utils/Usuarios';
+import { parseDiaMesAno, formatarHora } from '../../utils/dateUtils';
 import { confirmarReservaAPI } from '../../services/userServiceAPI';
 import './FormHomeGarcom.css';
 
 export const FormHomeGarcom = ({
     reservas,
     setReservas,
-    cargo,
+    user,
     setMostrarTabela,
     setColunas,
     setDados,
@@ -24,11 +21,8 @@ export const FormHomeGarcom = ({
     const [dataInicial, setDataInicial] = useState('');
     const [dataFinal, setDataFinal] = useState('');
 
-    const { usuario } = useUser();
-    const isGerente = usuario?.cargo === 'gerente';
-
-
-
+    const usuario = user;
+    const isGerente = usuario?.cargo?.toLowerCase() === 'gerente';
     const tituloFormulario = isGerente ? 'Selecione uma operação:' : 'Selecionar mesa:';
     const iconeInput = isGerente ? "/sheet.svg" : "/table_bar.svg";
 
@@ -39,14 +33,10 @@ export const FormHomeGarcom = ({
     ];
 
     const reservasDisponiveis = reservas.filter(r => r.statusMesa === 'reservada' && !r.garcomResponsavel);
-    const nomeUsuario = usuario?.cargo === 'garcom' ? (usuario?.nome || 'garcom') : 'gerente';
-
-
 
     const handleConfirmar = async () => {
         if (isGerente) {
             if (!mesaSelecionada) return;
-
             let mensagem = '';
             let colunasTabela = [];
             let dadosTabela = [];
@@ -59,56 +49,37 @@ export const FormHomeGarcom = ({
                         setShowModal(true);
                         return;
                     }
-
                     mensagem = `Relatório de reservas para a mesa ${numeroMesaRelatorio}.`;
-                    colunasTabela = ['Mesa', 'Data'];
+                    colunasTabela = ['Mesa', 'Data', 'Hora'];
                     dadosTabela = reservas
                         .filter(r => r.numeMesa.toString() === numeroMesaRelatorio)
-                        .map(r => ({
-                            Mesa: r.numeMesa,
-                            Data: r.data
-                        }));
+                        .map(r => ({ Mesa: r.numeMesa, Data: r.data, Hora: formatarHora(r.hora) }));
                     break;
-
                 case 'relatorio_garcom':
                     mensagem = 'Relatório de mesas confirmadas por garçom.';
                     colunasTabela = ['Garçom', 'Mesa', 'Status'];
-
                     dadosTabela = reservas
                         .filter(r => r.garcomResponsavel && r.statusMesa === 'livre')
-                        .map(r => ({
-                            Garçom: r.garcomResponsavel,
-                            Mesa: r.numeMesa,
-                            Status: 'confirmada'
-                        }));
+                        .map(r => ({ Garçom: r.garcomResponsavel, Mesa: r.numeMesa, Status: 'confirmada' }));
                     break;
-
                 case 'relatorio_reservas_periodo':
-                    const dataInicioParsed = parseDiaMesAno(dataInicial);
-                    const dataFimParsed = parseDiaMesAno(dataFinal);
-
-                    if (!dataInicioParsed || !dataFimParsed || dataInicioParsed > dataFimParsed) {
-                        setModalTipo('erro');
-                        setModalMensagem('Datas inválidas ou fora de ordem. Use o formato DD/MM/AAAA.');
-                        setShowModal(true);
-                        return;
-                    }
-
-                    mensagem = 'Relatório de reservas no período selecionado.';
-                    colunasTabela = ['Mesa', 'Data', 'Hora', 'Status'];
-                    dadosTabela = reservas
-                        .filter(r => {
-                            const dataReserva = parseDiaMesAno(r.data);
-                            return dataReserva && dataReserva >= dataInicioParsed && dataReserva <= dataFimParsed;
-                        })
-                        .map(r => ({
-                            Mesa: r.numeMesa,
-                            Data: r.data,
-                            Hora: r.hora,
-                            Status: r.statusMesa
-                        }));
-                    break;
-
+                     const dataInicioParsed = parseDiaMesAno(dataInicial);
+                     const dataFimParsed = parseDiaMesAno(dataFinal);
+                     if (!dataInicioParsed || !dataFimParsed || dataInicioParsed > dataFimParsed) {
+                         setModalTipo('erro');
+                         setModalMensagem('Datas inválidas ou fora de ordem. Use o formato DD/MM/AAAA.');
+                         setShowModal(true);
+                         return;
+                     }
+                     mensagem = 'Relatório de reservas no período selecionado.';
+                     colunasTabela = ['Mesa', 'Data', 'Hora', 'Status'];
+                     dadosTabela = reservas
+                         .filter(r => {
+                             const dataReserva = parseDiaMesAno(r.data);
+                             return dataReserva && dataReserva >= dataInicioParsed && dataReserva <= dataFimParsed;
+                         })
+                         .map(r => ({ Mesa: r.numeMesa, Data: r.data, Hora: formatarHora(r.hora), Status: r.statusMesa }));
+                     break;
                 default:
                     mensagem = 'Operação desconhecida.';
             }
@@ -116,79 +87,56 @@ export const FormHomeGarcom = ({
             setModalTipo('sucesso');
             setModalMensagem(mensagem);
             setShowModal(true);
-
             setTimeout(() => {
                 setColunas(colunasTabela);
                 setDados(dadosTabela);
                 setOperacaoSelecionada(mesaSelecionada);
                 setMostrarTabela(true);
             }, 1500);
-
             return;
         }
 
-        if (!mesaSelecionada) return;
+        // Lógica Final do Garçom
+        if (!mesaSelecionada) {
+            setModalTipo('erro');
+            setModalMensagem('Por favor, escolha uma mesa para confirmar.');
+            setShowModal(true);
+            return;
+        }
 
-        const [mesaSelecionadaNumero, mesaSelecionadaData] = mesaSelecionada.split('_');
+        const reservaAConfirmar = reservas.find(r => r.id.toString() === mesaSelecionada);
 
-        const reservaIndex = reservas.findIndex(
-            r => r.numeMesa.toString() === mesaSelecionadaNumero &&
-                r.data === mesaSelecionadaData &&
-                r.statusMesa === 'reservada'
-        );
-
-        if (reservaIndex === -1) {
+        if (!reservaAConfirmar) {
             setModalTipo('erro');
             setModalMensagem('Reserva não encontrada ou já foi confirmada/atendida.');
             setShowModal(true);
             return;
         }
 
-        const novasReservas = [...reservas];
-        const reservaSelecionada = novasReservas[reservaIndex];
-
-        let mensagem = '';
-
-         try {
-        // Chamada à API para confirmar a reserva no backend
-        console.log('Enviando confirmação para reserva ID:', reservaSelecionada.id);
-        const resposta = await confirmarReservaAPI(reservaSelecionada.id, usuario.nome); // Supondo que a reserva tenha um ID
-        console.log('Resposta completa da API:', resposta);
-
-        if (resposta.sucesso) {
-            // Atualiza o estado local
-            console.log('Atualizando estado local para mesa:', reservaSelecionada.numeMesa);
-            const novasReservas = [...reservas];
-            novasReservas[reservaIndex].statusMesa = 'livre';
-            novasReservas[reservaIndex].garcomResponsavel = usuario.nome;
-
-            setReservas(novasReservas);
-            setModalTipo('sucesso');
-            setModalMensagem("Mesa confirmada com sucesso");
-            setShowModal(true);
-        } else {
+        try {
+            const resposta = await confirmarReservaAPI(reservaAConfirmar.id, usuario.nome);
+            if (resposta.sucesso) {
+                const novasReservas = reservas.map(res =>
+                    res.id === reservaAConfirmar.id
+                        ? { ...res, statusMesa: 'livre', garcomResponsavel: usuario.nome }
+                        : res
+                );
+                setReservas(novasReservas);
+                setModalTipo('sucesso');
+                setModalMensagem("Mesa confirmada com sucesso!");
+                setShowModal(true);
+            } else {
+                setModalTipo('erro');
+                setModalMensagem(resposta.mensagem || "Erro ao confirmar a reserva.");
+                setShowModal(true);
+            }
+        } catch (error) {
+            console.error('Erro detalhado ao confirmar reserva:', error);
             setModalTipo('erro');
-            setModalMensagem(resposta.mensagem || "Erro ao confirmar a reserva.");
+            setModalMensagem("Erro ao conectar com o servidor.");
             setShowModal(true);
         }
-    } catch (error) {
-        console.error('Erro detalhado:', error);
-        setModalTipo('erro');
-        setModalMensagem("Erro ao conectar com o servidor.");
-        setShowModal(true);
-    }
-        setReservas(novasReservas);
-
-        setModalTipo('sucesso');
-        setModalMensagem("Mesa confirmada com sucesso");
-        setShowModal(true);
     };
-
-    useEffect(() => {
-        console.log("Reservas atualizadas:", reservas);
-    }, [reservas]);
-
-    console.log("Reservas disponíveis:", reservasDisponiveis);
 
     return (
         <div className='formhome-container'>
@@ -213,9 +161,9 @@ export const FormHomeGarcom = ({
                                         ? opcoesGerente.map((op, idx) => (
                                             <option key={idx} value={op.value}>{op.label}</option>
                                         ))
-                                        : reservasDisponiveis.map((res, idx) => (
-                                            <option key={idx} value={`${res.numeMesa}_${res.data}`}>
-                                                Mesa - {res.numeMesa} | Dia - {formatarDataISO(res.data)} | Hora - {formatarHora(res.hora)}
+                                        : reservasDisponiveis.map((res) => (
+                                            <option key={res.id} value={res.id}>
+                                                Mesa - {res.numeMesa} | Dia - {res.data} | Hora - {formatarHora(res.hora)}
                                             </option>
                                         ))
                                     }
@@ -226,23 +174,7 @@ export const FormHomeGarcom = ({
                 </div>
 
                 {isGerente && mesaSelecionada === 'relatorio_mesa' && (
-                    <div className="form-group input-responsavel">
-                        <label className='form-title'>Número da mesa:</label>
-                        <div className="input-icon-wrapper">
-                            <img src="/table_bar.svg" alt="Ícone mesa" className="input-icon" />
-                            <input
-                                type="text"
-                                className="form-control input-with-icon"
-                                placeholder="Ex: 5"
-                                value={numeroMesaRelatorio}
-                                onChange={(e) => setNumeroMesaRelatorio(e.target.value)}
-                            />
-                        </div>
-                    </div>
-                )}
-
-                {isGerente && mesaSelecionada === 'relatorio_mesa' && (
-                    <div className="form-group input-responsavel">
+                     <div className="form-group input-responsavel">
                         <label className='form-title'>Selecione o número da mesa:</label>
                         <div className="input-icon-wrapper">
                             <img src="/table_bar.svg" alt="Ícone input" className="input-icon" />
@@ -252,12 +184,37 @@ export const FormHomeGarcom = ({
                                 onChange={(e) => setNumeroMesaRelatorio(e.target.value)}
                             >
                                 <option value="" disabled hidden>-- Escolha uma mesa --</option>
-                                {[...new Set(reservas.map(r => r.numeMesa))].map((mesa, idx) => (
+                                {[...new Set(reservas.map(r => r.numeMesa))].sort((a, b) => a - b).map((mesa, idx) => (
                                     <option key={idx} value={mesa}>
                                         Mesa {mesa}
                                     </option>
                                 ))}
                             </select>
+                        </div>
+                    </div>
+                )}
+                
+                {isGerente && mesaSelecionada === 'relatorio_reservas_periodo' && (
+                     <div className="date-inputs-container">
+                        <div className="form-group input-responsavel">
+                            <label className='form-title'>Data Inicial:</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="DD/MM/AAAA"
+                                value={dataInicial}
+                                onChange={(e) => setDataInicial(e.target.value)}
+                            />
+                        </div>
+                        <div className="form-group input-responsavel">
+                            <label className='form-title'>Data Final:</label>
+                            <input
+                                type="text"
+                                className="form-control"
+                                placeholder="DD/MM/AAAA"
+                                value={dataFinal}
+                                onChange={(e) => setDataFinal(e.target.value)}
+                            />
                         </div>
                     </div>
                 )}
