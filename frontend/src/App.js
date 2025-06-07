@@ -11,27 +11,27 @@ import {
   logoutUser
 } from './services/userService';
 import api from './services/axiosClient';
-import { UserProvider, useUser } from './context/userContext'; // Adicione esta importação
+
 
 function App() {
   const cargos = ["Gerente", "Garçom", "Atendente"];
   const [isLogin, setIsLogin] = useState(true);
   const [userLogged, setUserLogged] = useState(null);
   const navigate = useNavigate();
-  const { setUsuario } = useUser();
+
 
   const handleLogin = async ({ email, senha }) => {
     try {
       const user = await loginUsuario(email, senha);
       saveLoggedUser(user);
       setUserLogged(user);
-      setUsuario(user);
       alert(`Bem-vindo, ${user.nome}!`);
       navigate('/Home');
     } catch (err) {
       alert(err);
     }
   };
+
 
   const logout = () => {
     setUserLogged(null);
@@ -47,6 +47,7 @@ function App() {
     }
   }, []);
 
+
   const aoCadastrar = async (novoUsuario) => {
     try {
       await api.post('/usuario', novoUsuario);
@@ -57,38 +58,37 @@ function App() {
     }
   };
 
+
   return (
-    <UserProvider> {/* Envolva tudo com o UserProvider */}
-      <Routes>
-        <Route path="/" element={
-          <div className="main-container">
-            {!userLogged ? (
-              isLogin ? (
-                <LoginForm onLogin={handleLogin} onToggle={() => setIsLogin(false)} />
-              ) : (
-                <SignUpForm cargos={cargos} aoCadastrar={aoCadastrar} onToggle={() => setIsLogin(true)} />
-              )
+    <Routes>
+      <Route path="/" element={
+        <div className="main-container">
+          {!userLogged ? (
+            isLogin ? (
+              <LoginForm onLogin={handleLogin} onToggle={() => setIsLogin(false)} />
             ) : (
-              <div className="login-container">
-                <div className="login-form">
-                  <h2>Olá, {userLogged.nome}!</h2>
-                  <p>Você está logado como <strong>{userLogged.cargo}</strong>.</p>
-                  <button className="btn btn-danger mt-3" onClick={logout}>Sair</button>
-                </div>
-              </div>
-            )}
-          </div>
-        } />
-        <Route path="/Home"
-          element={
-            userLogged ? (
-              <Home user={userLogged} logout={logout} />
-            ) : (
-              <p>Carregando usuário...</p>
+              <SignUpForm cargos={cargos} aoCadastrar={aoCadastrar} onToggle={() => setIsLogin(true)} />
             )
-          } />
-      </Routes>
-    </UserProvider>
+          ) : (
+            <div className="login-container">
+              <div className="login-form">
+                <h2>Olá, {userLogged.nome}!</h2>
+                <p>Você está logado como <strong>{userLogged.cargo}</strong>.</p>
+                <button className="btn btn-danger mt-3" onClick={logout}>Sair</button>
+              </div>
+            </div>
+          )}
+        </div>
+      } />
+      <Route path="/Home"
+        element={
+          userLogged ? (
+            <Home user={userLogged} logout={logout} />
+          ) : (
+            <p>Carregando usuário...</p>
+          )
+        } />
+    </Routes>
   );
 }
 
