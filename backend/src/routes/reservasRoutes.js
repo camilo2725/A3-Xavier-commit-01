@@ -54,6 +54,11 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
     const dados = req.body;
 
+    if (!dados.data.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        return res.status(400).json({ erro: 'Formato de data inválido. Use AAAA-MM-DD' });
+    }
+
+
     try {
 
         const conflito = await db('reservas')
