@@ -1,29 +1,25 @@
 export const parseDiaMesAno = (dataStr) => {
     if (!dataStr) return null;
-
-    const dataRegex = /^\d{2}\/\d{2}\/\d{4}$/;
-    if (dataRegex.test(dataStr)) {
-        const [dia, mes, ano] = dataStr.split('/').map(Number);
-        const data = new Date(ano, mes - 1, dia);
-        if (
-            data.getFullYear() === ano &&
-            data.getMonth() === mes - 1 &&
-            data.getDate() === dia
-        ) {
-            return data;
+    
+    try {
+        const dataRegex = /^\d{2}\/\d{2}\/\d{4}$/;
+        if (dataRegex.test(dataStr)) {
+            const [dia, mes, ano] = dataStr.split('/').map(Number);
+            const data = new Date(ano, mes - 1, dia);
+            if (
+                data.getFullYear() === ano &&
+                data.getMonth() === mes - 1 &&
+                data.getDate() === dia
+            ) {
+                return data;
+            }
         }
+        return null;
+    } catch (error) {
+        console.error('Erro ao parsear data:', error);
+        return null;
     }
-
-    const isoRegex = /^\d{4}-\d{2}-\d{2}$/;
-    if (isoRegex.test(dataStr)) {
-        const data = new Date(dataStr);
-        if (!isNaN(data.getTime())) {
-            return data;
-        }
-    }
-
-
-}
+};
 export const formatarDataISO = (data) => {
     if (!data) return '';
     const dataObj = new Date(data);
