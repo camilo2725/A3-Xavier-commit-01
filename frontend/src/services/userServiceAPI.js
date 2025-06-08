@@ -5,7 +5,7 @@ const API_URL = 'http://localhost:3001/api';
 
 export async function buscarReservas() {
     try {
-        const response = await api.get('/reservas'); 
+        const response = await api.get('/reserva'); 
         return response.data.map(reserva => ({
             ...reserva,
             data: formatarDataISO(reserva.data),
@@ -48,7 +48,7 @@ export async function loginUsuario(email, senha) {
 
 export const confirmarReservaAPI = async (reservaId, nomeGarcom) => {
     try {
-        const response = await api.post(`/reservas/${reservaId}/confirmar`, {
+        const response = await api.post(`/reserva/${reservaId}/confirmar`, {
              nomeGarcom 
         });
 
