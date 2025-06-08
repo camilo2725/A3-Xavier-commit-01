@@ -82,35 +82,54 @@ export const FormHome = ({ reservas, setReservas }) => {
 
     const handleCancelar = (e) => {
     e.preventDefault();
+    // console.log('[DEBUG Cancelar] Botão cancelar clicado'); // Verifica se o handler está sendo chamado
 
     const numeroMesa = parseInt(formData.numeMesa);
+    // console.log('[DEBUG Cancelar] Número da mesa:', numeroMesa); // Verifica o valor da mesa
 
     if (!numeroMesa) {
+        console.error('[DEBUG Cancelar] Número da mesa inválido');
         return;
     }
 
+    // console.log('[DEBUG Cancelar] Data antes da conversão:', formData.data);
+    const [dia, mes, ano] = formData.data.split('/');
+    const dataFormatada = `${ano}-${mes}-${dia}`;
+    // console.log('[DEBUG Cancelar] Data após conversão:', dataFormatada);
+
+    // console.log('[DEBUG Cancelar] Enviando requisição...');
     fetch(`http://localhost:3001/api/reserva/${numeroMesa}/cancelar`, {
         method: 'PUT',
         body: JSON.stringify({
-            data: formData.data,
+            data: dataFormatada,
             hora: formData.hora
         }),
         headers: {
             'Content-Type': 'application/json',
         },
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('[DEBUG Cancelar] Resposta recebida:', response);
+        if (!response.ok) {
+            console.error('[DEBUG Cancelar] Erro na resposta:', response.status);
+            throw new Error('Erro na resposta do servidor');
+        }
+        return response.json();
+    })
     .then(data => {
+        console.log('[DEBUG Cancelar] Dados da resposta:', data);
         setModalTipo('sucesso');
-        setModalMensagem(data.mensagem);
+        setModalMensagem(data.mensagem || 'Reserva cancelada com sucesso');
         setShowModal(true);
     })
     .catch(error => {
+        console.error('[DEBUG Cancelar] Erro no cancelamento:', error);
         setModalTipo('erro');
-        setModalMensagem('Erro ao tentar cancelar a reserva.');
+        setModalMensagem(error.message || 'Erro ao tentar cancelar a reserva.');
         setShowModal(true);
     });
 
+    // console.log('[DEBUG Cancelar] Limpando formulário...');
     setFormData({ data: '', hora: '', nomeRespons: '', numeMesa: '', quantPessoas: '' });
 };
     useEffect(() => {
