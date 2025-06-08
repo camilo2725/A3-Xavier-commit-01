@@ -9,6 +9,8 @@ export const getReservas = async () => {
 
 export async function criarReserva(reserva) {
     try {
+        console.log('Enviando reserva:', reserva); 
+
         const response = await axios.post('http://localhost:3001/api/reserva', {
             data: reserva.data,
             hora: reserva.hora,
@@ -19,7 +21,8 @@ export async function criarReserva(reserva) {
             usuario_id: reserva.usuarioId || null,
         });
 
-        return response.data.dados; // ⬅ retorne o objeto real da reserva salva
+        console.log('Resposta do servidor:', response.data);
+        return response.data.dados;
     } catch (error) {
         console.error('Erro ao criar reserva:', error);
         throw error;
