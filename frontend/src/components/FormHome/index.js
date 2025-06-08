@@ -41,6 +41,14 @@ export const FormHome = ({ reservas, setReservas }) => {
     const handleCriar = async (e) => {
         e.preventDefault();
 
+        // Adicionar validação e conversão de data
+        if (!formData.data.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+            setErros(['Formato de data inválido. Use DD/MM/AAAA']);
+            return;
+        }
+        // Converter data para formato AAAA-MM-DD
+        const [dia, mes, ano] = formData.data.split('/');
+        const dataFormatada = `${ano}-${mes}-${dia}`;
         const { sucesso, reserva: novaReserva, mensagem } = Reserva.criarReserva(formData, reservas);
 
         if (!sucesso) {
@@ -53,7 +61,10 @@ export const FormHome = ({ reservas, setReservas }) => {
 
         try {
 
-            const reservaSalva = await criarReserva(novaReserva);
+            const reservaSalva = await criarReserva({
+                ...formData,
+                data: dataFormatada // ← Agora envia no formato correto
+            });
 
             setReservas(prev => [...prev, reservaSalva]);
             setMensagem(`Reserva criada com sucesso para a mesa ${novaReserva.numeMesa}!`);
@@ -173,4 +184,3 @@ export const FormHome = ({ reservas, setReservas }) => {
         </div>
     );
 };
-
