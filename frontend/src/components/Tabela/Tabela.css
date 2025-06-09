@@ -1,24 +1,57 @@
 .tabela-container {
     width: 100%;
-    overflow-x: auto;
-    margin-top: 2rem;
-    border-radius: 18px;
-}
-
-.table {
-    width: 100%;
-    min-width: 400px;
-}
-
-
-
-.tabela-personalizada {
+    margin-top: 1rem;
     border-radius: 12px;
+    background-color: #2c3e50;
     box-shadow: rgb(38, 57, 77) 0px 20px 30px -10px;
     overflow: hidden;
+    padding-top: 1px;
+}
+
+.table-wrapper {
+    max-height: 60vh; /* 60% da altura da tela */
+    overflow-y: auto;
+    display: block;
+    margin-top: -1px;
+}
+
+.table-wrapper::-webkit-scrollbar {
+    width: 8px;
+}
+
+.table-wrapper::-webkit-scrollbar-track {
+    background: #34495e;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+    background: #7f8c8d;
+    border-radius: 4px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #95a5a6;
+}
+
+.tabela-personalizada {
+    width: 100%;
+    margin-bottom: 0;
+}
+
+.tabela-personalizada th {
+    position: sticky;
+    top: -1px;
+    background-color: #34495e;
+    z-index: 10;
+    box-shadow: 0 1px 0 #3d5166;
 }
 
 .tabela-personalizada th,
 .tabela-personalizada td {
-    border: none;
+    padding: 12px 15px;
+    border-bottom: 1px solid #3d5166;
+    white-space: nowrap;
+}
+
+.tabela-personalizada tr:hover td {
+    background-color: #3d5166;
 }
