@@ -50,24 +50,56 @@ export const FormHomeGarcom = ({
                         return;
                     }
                     mensagem = `Relatório de reservas para a mesa ${numeroMesaRelatorio}.`;
-                    colunasTabela = ['Mesa', 'Data', 'Hora'];
+                    colunasTabela = ['Mesa', 'Data', 'Hora', 'Status'];
+                    
                     dadosTabela = reservas
-                        .filter(r => r.numeMesa.toString() === numeroMesaRelatorio)
-                        .map(r => ({ Mesa: r.numeMesa, Data: r.data, Hora: formatarHora(r.hora) }));
-                    break;
+                    .filter(r => r.numeMesa.toString() === numeroMesaRelatorio)
+                    .map(r => {
+                        const [ano, mes, dia] = r.data.split('/');
+                        return {
+                            Mesa: r.numeMesa,
+                            Data: r.data,
+                            Hora: formatarHora(r.hora),
+                            Status: r.statusMesa,
+                            _dataOrdenacao: new Date(ano, mes - 1, dia).getTime()
+                        };
+                    })
+                    .sort((a, b) => b._dataOrdenacao - a._dataOrdenacao) // Ordenar por data
+                    .map(({ _dataOrdenacao, ...rest }) => rest);
+                break;
                 case 'relatorio_garcom':
                     mensagem = 'Relatório de mesas confirmadas por garçom.';
-                    colunasTabela = ['Garçom', 'Mesa', 'Status'];
+                    colunasTabela = ['Garçom', 'Mesa', 'Data', 'Hora', 'Status'];
                     dadosTabela = reservas
-                        .filter(r => r.garcomResponsavel && r.statusMesa === 'livre')
-                        .map(r => ({ Garçom: r.garcomResponsavel, Mesa: r.numeMesa, Status: 'confirmada' }));
+                    .filter(r => r.garcomResponsavel && r.statusMesa === 'livre')
+                    .map(r => {
+                        // Convertendo a data de "AAAA/MM/DD" para objeto Date
+                        const [ano, mes, dia] = r.data.split('/');
+                        const dataObj = new Date(ano, mes - 1, dia);
+                        
+                        return {
+                            Garçom: r.garcomResponsavel,
+                            Mesa: r.numeMesa,
+                            Data: r.data, // Mantém no formato original para exibição
+                            Hora: formatarHora(r.hora),
+                            Status: 'confirmada',
+                            // Campo auxiliar para ordenação:
+                            _dataOrdenacao: dataObj.getTime() // Timestamp para ordenação precisa
+                            };
+                        })
+                        .sort((a, b) => {
+                            // Ordem alfabética do garçom
+                            if (a.Garçom.toLowerCase() < b.Garçom.toLowerCase()) return -1;
+                            if (a.Garçom.toLowerCase() > b.Garçom.toLowerCase()) return 1;
+                            // Data (mais recente primeiro)
+                            return b._dataOrdenacao - a._dataOrdenacao;
+                        })
+                        // Remove o campo auxiliar da saída final
+                        .map(({ _dataOrdenacao, ...rest }) => rest);
                     break;
                 case 'relatorio_reservas_periodo':
-                    console.log('[DEBUG FormHomeGarcom/index.js] Reservas:', reservas);
                     const dataInicioParsed = parseDiaMesAno(dataInicial);
                     const dataFimParsed = parseDiaMesAno(dataFinal);
-                    console.log('[DEBUG FormHomeGarcom/index.js] Datas filtro:', dataInicioParsed, dataFimParsed);
-
                     if (!dataInicioParsed || !dataFimParsed || dataInicioParsed > dataFimParsed) {
                         setModalTipo('erro');
                         setModalMensagem('Datas inválidas ou fora de ordem. Use o formato DD/MM/AAAA.');
@@ -77,22 +109,25 @@ export const FormHomeGarcom = ({
                     
                     mensagem = 'Relatório de reservas no período selecionado.';
                     colunasTabela = ['Mesa', 'Data', 'Hora', 'Status'];
+                    
                     dadosTabela = reservas.filter(r => {
-                        // Converter a data da reserva (no formato AAAA/MM/DD) para objeto Date
-                        const [ano, mes, dia] = r.data.split('/').map(Number);
+                        const [ano, mes, dia] = r.data.split('/');
                         const dataReserva = new Date(ano, mes - 1, dia);
-                        // console.log('[DEBUG FormHomeGarcom/index.js] Data reserva:', r.data, 'Data objeto:', dataReserva);
-                        
-                        // Verificar se a data está dentro do período
                         return dataReserva >= dataInicioParsed && dataReserva <= dataFimParsed;
                     })
-                    .map(r => ({ 
-                        Mesa: r.numeMesa, 
-                        Data: r.data, 
-                        Hora: formatarHora(r.hora), 
-                        Status: r.statusMesa 
-                    }));
-                    break;
+                    .map(r => {
+                        const [ano, mes, dia] = r.data.split('/');
+                        return {
+                            Mesa: r.numeMesa,
+                            Data: r.data,
+                            Hora: formatarHora(r.hora),
+                            Status: r.statusMesa,
+                            _dataOrdenacao: new Date(ano, mes - 1, dia).getTime()
+                        };
+                    })
+                    .sort((a, b) => a._dataOrdenacao - b._dataOrdenacao) // Ordenar por data
+                    .map(({ _dataOrdenacao, ...rest }) => rest);
+                break;
                 default:
                     mensagem = 'Operação desconhecida.';
             }
