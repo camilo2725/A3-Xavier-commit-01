@@ -100,9 +100,8 @@ router.post('/', async (req, res) => {
 router.post('/:id/confirmar', async (req, res) => {
     try {
         const { id } = req.params;
-        const { nomeGarcom } = req.body; // Adicione esta linha para capturar o nome do garçom
+        const { nomeGarcom } = req.body; 
 
-        // 1. Verificar se a reserva existe
         const reserva = await db('reservas')
             .where({ id })
             .first();
@@ -114,7 +113,6 @@ router.post('/:id/confirmar', async (req, res) => {
             });
         }
 
-        // 2. Verificar se a reserva já não está confirmada
         if (reserva.statusMesa === 'livre') {
             return res.status(400).json({ 
                 sucesso: false,
@@ -122,14 +120,13 @@ router.post('/:id/confirmar', async (req, res) => {
             });
         }
 
-        // 3. Atualizar a reserva no banco de dados
         const [reservaAtualizada] = await db('reservas')
             .where({ id })
             .update({ 
-                statusMesa: 'livre',           // Define o status como 'livre'
-                statusAnterior: 'reservada',   // Atualiza o statusAnterior para 'reservada'
-                garcomResponsavel: nomeGarcom, // Adiciona o nome do garçom
-                updated_at: db.fn.now()        // Atualiza a data/hora de atualização
+                statusMesa: 'livre',           
+                statusAnterior: 'reservada',   
+                garcomResponsavel: nomeGarcom, 
+                updated_at: db.fn.now()        
             })
             .returning('*');
 
