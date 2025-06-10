@@ -58,13 +58,21 @@ router.post('/', async (req, res) => {
     }
 
     try {
+
+        const dataReserva = new Date(dados.data);
+        const anoReserva = dataReserva.getFullYear();
+
+        if (anoReserva < 2025) {
+            return res.status(400).json({ erro: 'As reservas só podem ser feitas a partir de 2025.' });
+        }
+
         const conflitoReservada = await db('reservas')
             .where({ numeMesa: dados.numeMesa, data: dados.data })
             .andWhere('statusMesa', '=', 'reservada')
             .first();
 
         if (conflitoReservada) {
-            return res.status(400).json({ erro: `Já existe uma reserva para a mesa ${dados.numeMesa} na data ${dados.data}.` });
+            return res.status(400).json({ erro: `Já existe uma reserva para o dia ${dados.data} na mesa ${dados.numeMesa}.` });
         }
 
         const conflitoLivre = await db('reservas')
@@ -73,7 +81,7 @@ router.post('/', async (req, res) => {
             .first();
 
         if (conflitoLivre) {
-            return res.status(400).json({ erro: `A mesa ${dados.numeMesa} está confirmada para outro evento na data ${dados.data}.` });
+            return res.status(400).json({ erro: `A mesa ${dados.numeMesa} está confirmada para outro evento no dia ${dados.data}.` });
         }
 
         const mesaCancelada = await db('reservas')
@@ -82,6 +90,7 @@ router.post('/', async (req, res) => {
             .first();
 
         if (mesaCancelada) {
+
             await db('reservas')
                 .where({ numeMesa: dados.numeMesa, data: dados.data })
                 .update({
@@ -93,6 +102,7 @@ router.post('/', async (req, res) => {
                     updated_at: new Date()
                 });
         } else {
+
             await db('reservas')
                 .insert(dados);
         }
@@ -103,6 +113,7 @@ router.post('/', async (req, res) => {
         res.status(500).json({ erro: 'Erro ao criar reserva.' });
     }
 });
+
 router.post('/:id/confirmar', async (req, res) => {
     try {
         const { id } = req.params;
